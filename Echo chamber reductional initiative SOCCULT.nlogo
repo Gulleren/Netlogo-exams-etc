@@ -3,7 +3,7 @@
 globals [
 
 ]
-;bipboptesting
+
 breed [bias1's bias1]
 breed [bias2's bias2]
 breed [ppls ppl]
@@ -12,7 +12,6 @@ breed [ppls ppl]
 bias1's-own [
   name
   my-ppls
-  age
 ]
 
 bias2's-own [
@@ -24,6 +23,7 @@ ppls-own [
   ;news-behaviour-group
   my-stations1
   my-stations2
+  my-friends
   bias
 
 ]
@@ -37,8 +37,12 @@ to setup
   make-bias1's
   make-bias2's
   populate
+  set-my-bias
   set-my-stations
+  set-my-friends
+
   make-network
+
 
 
 end
@@ -63,14 +67,19 @@ to make-bias1's
   ;set plant-patches sort-on [pxcor] plant-patches ;(from left to right based on pxcor)
 
   create-bias1's 3 [
-   set color white ;set colour after name @@@
-   set shape "house" set size 4 ;find better shape @@@
+   set color blue ;set colour after name @@@
+   set shape "house" set size 2 ;find better shape @@@
    set name first station-names
    set station-names but-first station-names ;removes the first item from the name list (since it's now taken) (this code block is run by one station at a time)
 
-    setxy random-xcor random-ycor
-    ;move-to first plant-patches
-    ;set plant-patches but-first plant-patches
+
+   ;;positions:
+   layout-circle turtles 10
+   ;let plant-patches (patch-set patch 1 20 patch 20 10 patch 19 3) ;;12 different positions
+   ;set plant-patches sort-on [pxcor] plant-patches ;(from left to right based on pxcor)
+   ;setxy random-xcor random-ycor
+   ;move-to first plant-patches
+   ;set plant-patches but-first plant-patches
   ]
 
 end
@@ -84,12 +93,15 @@ to make-bias2's
   ;set plant-patches sort-on [pxcor] plant-patches ;(from left to right based on pxcor)
 
   create-bias2's 3 [
-   set color white ;set colour after name @@@
-   set shape "house" set size 4 ;find better shape @@@
+   set color red ;set colour after name @@@
+   set shape "house" set size 2 ;find better shape @@@
    set name first station-names
    set station-names but-first station-names ;removes the first item from the name list (since it's now taken) (this code block is run by one station at a time)
 
-    setxy random-xcor random-ycor
+
+    ;;positions
+   layout-circle turtles 11
+   ;setxy random-xcor random-ycor
     ;move-to first plant-patches
     ;set plant-patches but-first plant-patches
   ]
@@ -105,8 +117,11 @@ end
 to make-person [kind]
   if kind = "ppls" [
    create-ppls 1 [
-   set shape "person" set size 2 set color blue
-   setxy random-xcor random-ycor; location in the model @@
+   set shape "person" set size 1 set color green
+
+   ;;positions
+   layout-circle ppls 4
+   ;setxy random-xcor random-ycor; location in the model @@
    ;set news-behaviour-group news-behaviour-groupp
   ]
   ]
@@ -116,11 +131,37 @@ end
 
 
 to make-network
-  ask ppls [
-   create-links-with my-stations1
+  ;if network-structure = "standard" [
+    ask ppls [
+   ;create-links-with my-stations1
    create-links-with my-stations2
-   ;create-links-with my-friends
+   create-links-with my-friends
   ]
+  ;]
+
+;  if network-structure = "Echo chamber reduction1" [
+;   ask ppls [
+;      create-links-with echo1-stations1
+;      create-links-with echo1-stations2
+;      create-links-with my-friends
+;    ]
+;  ]
+;
+;  if network-structure = "Echo chamber reduction2" [
+;   ask ppls [
+;      create-links-with echo2-stations1
+;      create-links-with echo2-stations2
+;      create-links-with my-friends
+;    ]
+;  ]
+;
+;  if network-structure = "Echo chamber reduction3" [
+;   ask ppls [
+;      create-links-with echo3-stations1
+;      create-links-with echo3-stations2
+;      create-links-with my-friends
+;    ]
+;  ]
 
   ;if network-structure = "standard" [
   ;ask n-of  (0.3 / 100 * count ppls) ppls [
@@ -151,44 +192,209 @@ end
 
 to-report my-nr-bias1's
 
+
   let this-number random-float 1
 
-  ;
 
-  if this-number < 0.33 [ ;
-    report 1
-  ]
+                                                              ;STANDARD NETWORK STRUCTURE start
+
+  if network-structure = "standard" [ ; 20% of Bias = 2 has no bias1 medias. Further we suspect that the part of the pop that does not completely avoid the opposite biased news have a higher exposure to their own
+;bias this is coded as a higher chance for higher number of links for their own bias. These numbers can be tweaked for ones specific use case - and if more specific data was available.
+    ;;                        ppls with BIAS = 1
+    if bias = "1" [
+
+      if this-number < 0.20 [ ;
+        report 1 ;
+        ]
 
   ;;
-  if this-number >= 0.33 and this-number < 0.66 [ ;
-    report 2
-  ]
+      if this-number >= 0.20 and this-number < 0.60 [ ;
+        report 2 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+        ]
 
   ;;
-  if this-number >= 0.66 [ ;
-    report 3
+      if this-number >= 0.60 [ ;
+        report 3
+        ]
+    ]
+
+
+  ;;                          ppls with BIAS = 2
+      if bias = "2" [
+      if this-number < 0.2 [ ;
+        report 0 ;
+        ]
+
+  ;;
+      if this-number >= 0.2 and this-number < 0.60 [ ;
+        report 1 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+        ]
+
+  ;;
+      if this-number >= 0.60 and this-number < 0.80 [ ;
+        report 2
+        ]
+
+  ;;
+      if this-number >= 0.80 [ ;
+        report 3
+        ]
+      ]
+
+    ;TESTETSETESTE
+
+
+    ;TESTSETESTES
+
   ]
+;   ;                                                   STANDARD NETWORK STRUCTURE END
+;
+;
+;  ;                                                     ECHO CHAMBER REDUCTION 1 start
+;  if network-structure = "echo chamber reduction1" [ ;Everyone
+;    ;;                         ppls with BIAS = 1
+;    if bias = "1" [
+;      if this-number < 0.33 [ ;
+;        report 1 ;
+;        ]
+;
+;  ;;
+;      if this-number >= 0.33 and this-number < 0.66 [ ;
+;        report 2 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+;        ]
+;
+;  ;;
+;      if this-number >= 0.66 [ ;
+;        report 3
+;        ]
+;      ]
+;
+;  ;;                          ppls with BIAS = 2
+;      if bias = "2" [
+;      if this-number < 0.50 [ ;
+;        report 1 ;
+;        ]
+;
+;  ;;
+;      if this-number >= 0.50 and this-number < 0.75 [ ;
+;        report 2
+;        ]
+;
+;  ;;
+;      if this-number >= 0.75 [ ;
+;        report 3
+;        ]
+;      ]
+;
+;  ] ;                                                     ECHO CHAMBER 1 END
+;
+;
+;    ;                                                     ECHO CHAMBER REDUCTION 2 start
+;  if network-structure = "echo chamber reduction2" [ ;Everyone
+;    ;;                         ppls with BIAS = 1
+;    if bias = "1" [
+;      if this-number < 0.33 [ ;
+;        report 1 ;
+;        ]
+;
+;  ;;
+;      if this-number >= 0.33 and this-number < 0.66 [ ;
+;        report 2 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+;        ]
+;
+;  ;;
+;      if this-number >= 0.66 [ ;
+;        report 3
+;        ]
+;      ]
+;
+;  ;;                          ppls with BIAS = 2
+;      if bias = "2" [
+;      if this-number < 0.33 [ ;
+;        report 1 ;
+;        ]
+;
+;  ;;
+;      if this-number >= 0.33 and this-number < 0.66 [ ;
+;        report 2
+;        ]
+;
+;  ;;
+;      if this-number >= 0.66 [ ;
+;        report 3
+;        ]
+;      ]
+;
+;  ] ;                                                     ECHO CHAMBER 2 END
+
+;------------------------------------------------------------------------------------ old stuff below
+;  if network-structure = "standard" [
+;  if this-number < 0.2 [ ;
+;    report 0 ;
+;  ]
+;
+;  ;;
+;  if this-number >= 0.2 and this-number < 0.48 [ ;
+;    report 1 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+;  ]
+;
+;  ;;
+;  if this-number >= 0.48 and this-number < 0.74 [ ;
+;    report 2
+;  ]
+;
+;  ;;
+;  if this-number >= 0.74 [ ;
+;    report 3
+;  ]
+;  ]
+;
+;
+;
+;  if network-structure = "echo chamber reduction1" [
+;  if this-number < 0.33 [ ;
+;    report 1 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+;  ]
+;
+;  ;;
+;  if this-number >= 0.33 and this-number < 0.66 [ ;
+;    report 2
+;  ]
+;
+;  ;;
+;  if this-number >= 0.66 [ ;
+;    report 3
+;  ]
+;  ]
 end
 
 to-report my-nr-bias2's
 
   let this-number random-float 1
 
-;;
-  if this-number < 0.33 [ ;
+  ;
+
+  if this-number < 0.2 [ ;
+    report 0 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+  ]
+
+  ;;
+  if this-number >= 0.2 and this-number < 0.48 [ ;
     report 1
   ]
 
   ;;
-  if this-number >= 0.33 and this-number < 0.66 [ ;
+  if this-number >= 0.48 and this-number < 0.74 [ ;
     report 2
   ]
 
   ;;
-  if this-number >= 0.66 [ ;
+  if this-number >= 0.74 [ ;
     report 3
   ]
+
 end
+
 
 
 to set-my-stations
@@ -201,22 +407,40 @@ to set-my-stations
   ;if news-behaviour-group = "group1" [
   ;set my-stations one-of bias1's
   ;]
-
-
 end
 
+to set-my-friends ; @@@
+  ask ppls [
+   set my-friends n-of random-float 50 other ppls
+  ]
+end
+
+to-report my-biass
+  let this-number random-float 1
+  ifelse this-number < 0.5 [
+      report 1
+  ][
+      report 2
+  ]
 
 
+  ;if this-number
+end
 
+to set-my-bias
+  ask ppls [
+   set bias my-biass
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
-466
-10
-1055
-600
+582
+18
+1196
+633
 -1
 -1
-17.61
+18.364
 1
 10
 1
@@ -276,7 +500,7 @@ INPUTBOX
 67
 78
 nr-ppls
-40.0
+200.0
 1
 0
 Number
@@ -284,11 +508,11 @@ Number
 CHOOSER
 7
 214
-188
+195
 259
 network-structure
 network-structure
-"standard" "echo chamber reduction"
+"standard" "echo chamber reduction1" "echo chamber reduction2" "echo chamber reduction3"
 0
 
 INPUTBOX
