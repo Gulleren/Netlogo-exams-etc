@@ -184,7 +184,7 @@ to-report my-nr-dem-medias-standard-democrat
 
 end
 
-to-report my-nr-dem-medias-standard-repuplican ; For the bias = republicans
+to-report my-nr-dem-medias-standard-repuplican
 
   let this-number random-float 1
 
@@ -210,7 +210,7 @@ to-report my-nr-dem-medias-standard-repuplican ; For the bias = republicans
 
 end
 
-to-report my-nr-rep-medias-standard-democrat ; For the bias = democrats
+to-report my-nr-rep-medias-standard-democrat
 
   let this-number random-float 1
 
