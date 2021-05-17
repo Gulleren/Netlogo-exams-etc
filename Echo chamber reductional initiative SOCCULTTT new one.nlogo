@@ -1,7 +1,7 @@
 ;extensions [fetch import-a csv table ]
 
 globals [
-  nr-democrat-dem-medias
+  nr-dem-medias-democrat ; number of democratic medias linked to
   nr-republican-rep-medias
 
 ]
@@ -164,7 +164,7 @@ to make-network
 
 end
 
-to-report my-nr-dem-medias-standard-democrat
+to-report my-nr-dem-medias-standard-democrat ; For the bias = democrat
 
   let this-number random-float 1
 
@@ -184,7 +184,7 @@ to-report my-nr-dem-medias-standard-democrat
 
 end
 
-to-report my-nr-dem-medias-standard-repuplican ; For the bias = republicans
+to-report my-nr-dem-medias-standard-republican ; For the bias = republican
 
   let this-number random-float 1
 
