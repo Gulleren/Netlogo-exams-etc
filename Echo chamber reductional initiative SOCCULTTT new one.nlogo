@@ -1,8 +1,11 @@
 ;extensions [fetch import-a csv table ]
 
 globals [
-  nr-dem-medias-democrat ; number of democratic medias linked to
-  nr-republican-rep-medias
+  nr-dem-shares-democrat ; number of democratic shares received for democrats
+  nr-rep-shares-democrat ; number of republican shares received for democrats
+
+  nr-dem-shares-republican ; number of democratic shares received for republicans
+  nr-rep-shares-republican
 
 ]
 
@@ -26,7 +29,11 @@ ppls-own [
   my-dem-medias
   my-rep-medias
   my-friends
-  bias
+  my-rep-friends
+  my-dem-friends
+  bias ; 2 levels, democrat or republican ""
+  shared-bias ;what bias the ppl will emit this tick. 2levels, "dem" and "rep"
+  my-attitude
 
 
 ]
@@ -43,6 +50,7 @@ to setup
   set-my-bias
   set-my-stations
   set-my-friends
+  set-my-attitude
 
   make-network
 
@@ -54,33 +62,106 @@ end
 to go
   color-bias
 
-  ;information-spread
+  information-spread
 
 
+  reset-shared-bias ;the bias the agent emits this tick - as a consequence of how many links or whether extremist or not
   tick
 
 end
 
 to information-spread
 
-  ;
+  ;;; SETTING shared-bias each tick
+  ask ppls [
+   ifelse my-attitude = "extremist" [
+   ;if extremist then democrats always share dem. republicans always share rep.
+   if bias = "democrat" [
+       set shared-bias "dem"
+      ]
 
-  ; ask ppls -- for-each bias1 link-neighbour set count-bias1-spread count-bias1-spread +1
+   if bias = "republican" [
+       set shared-bias "rep"
+      ]
+
+    ][ ;else
+
+   if bias = "democrat" [
+   if count my-dem-medias > count my-rep-medias [
+        set shared-bias "dem"  ;shared bias = what bias the ppl will emit this tick
+      ]
+
+   ifelse count my-rep-medias > count my-dem-medias and random-float 1 < 0.30 [ ;if more rep medias there is 30% chance that rep is shared
+        set shared-bias "rep"
+      ][
+        set shared-bias "dem"
+
+    ]
+  ] ; The bias = democrat in the else part of the first ifelse.
+
+   if bias = "republican" [
+      if count my-rep-medias > count my-dem-medias [
+        set shared-bias "rep"  ;shared bias = what bias the ppl will emit this tick
+      ]
+
+   ifelse count my-dem-medias > count my-rep-medias and random-float 1 < 0.30 [ ;if more rep medias there is 30% chance that rep is shared
+        set shared-bias "dem"
+      ][
+        set shared-bias "rep"
+
+   ]
+   ]
+
+  ]
+  ]
+  ;;;;setting shared-bias each tick END
+
+
 
   ask ppls [
+   if network-structure = "standard" [
    if bias = "democrat" [
-   if length my-dem-medias > length my-rep-medias [
-    set nr-democrat-dem-medias nr-democrat-dem-medias + 1
+      set nr-dem-shares-democrat nr-dem-shares-democrat + my-nr-dem-medias-standard-democrat
+      set nr-dem-shares-democrat nr-dem-shares-democrat + count link-neighbors with [shared-bias = "dem"]
 
-      ]
-    ]
+      set nr-rep-shares-democrat nr-rep-shares-democrat + my-nr-rep-medias-standard-democrat
+      set nr-rep-shares-democrat nr-rep-shares-democrat + count link-neighbors with [shared-bias = "rep"]
+
   ]
-;    ask link-neighbors with [color = orange] [
-;      ask my-friends
-;
-;    ]
-;  ]
-  ;
+  ]
+  ]
+
+    ask ppls [
+   if network-structure = "standard" [
+   if bias = "republican" [
+      set nr-rep-shares-republican nr-rep-shares-republican + my-nr-rep-medias-standard-republican
+      set nr-rep-shares-republican nr-rep-shares-republican + count link-neighbors with [shared-bias = "rep"]
+
+      set nr-dem-shares-republican nr-dem-shares-republican + my-nr-dem-medias-standard-republican
+      set nr-dem-shares-republican nr-dem-shares-republican + count link-neighbors with [shared-bias = "dem"]
+
+  ]
+  ]
+  ]
+
+end
+
+
+to reset-shared-bias
+
+  ask ppls [
+   set shared-bias "nothing"
+  ]
+
+end
+
+to update-attitude
+
+
+end
+
+to update-bias
+
 end
 
 to make-dem-medias
@@ -157,9 +238,10 @@ end
 
 to make-network
     ask ppls [
-   create-links-with my-dem-medias
-   create-links-with my-rep-medias
-   create-links-with my-friends
+   ;create-links-with my-dem-medias
+   ;create-links-with my-rep-medias
+   create-links-with my-dem-friends
+   create-links-with my-rep-friends
   ]
 
 end
@@ -367,10 +449,119 @@ to set-my-stations
 
 end
 
+; IF i cannot run the model then i will prob have to make the amount of friends an abstraction. Meaning that it is a number corresponding to the amount of ppl in your network that you actually get something from
+;on your startpage regularly. it wouldn't make sense to make a network with 300 friends pr. person - even though it might be the case in real life. This is because we would need to have 500k ppl+ in the model.
+to-report my-dem-friends-standard-democrat ; for the bias = democrat
+
+    let this-number random-float 1
+
+      if this-number < 0.20 [ ;
+        report random-poisson friends-lower-bound ;
+        ]
+
+  ;;
+      if this-number >= 0.20 and this-number < 0.60 [ ;
+        report random-poisson friends-medium-bound
+        ]
+
+  ;;
+      if this-number >= 0.60 [ ;
+        report random-poisson friends-higher-bound
+        ]
+
+end
+
+to-report my-dem-friends-standard-republican ; For the bias = republican
+
+  let this-number random-float 1
+
+      if this-number < 0.2 [ ;
+        report 0 ;
+        ]
+
+  ;;
+      if this-number >= 0.2 and this-number < 0.60 [ ;
+        report random-poisson friends-lower-bound ;
+        ]
+
+  ;;
+      if this-number >= 0.60 and this-number < 0.80 [ ;
+        report random-poisson friends-medium-bound
+        ]
+
+  ;;
+      if this-number >= 0.80 [ ;
+        report random-poisson friends-higher-bound
+        ]
+
+
+end
+
+
+to-report my-rep-friends-standard-democrat ; For the bias = democrats
+
+  let this-number random-float 1
+
+      if this-number < 0.2 [ ;
+        report 0 ;
+        ]
+
+  ;;
+      if this-number >= 0.2 and this-number < 0.60 [ ;
+        report random-poisson friends-lower-bound
+        ]
+
+  ;;
+      if this-number >= 0.60 and this-number < 0.80 [ ;
+        report random-poisson friends-medium-bound
+        ]
+
+  ;;
+      if this-number >= 0.80 [ ;
+        report random-poisson friends-higher-bound
+        ]
+
+end
+
+to-report my-rep-friends-standard-republican
+
+  let this-number random-float 1
+
+      if this-number < 0.20 [ ;
+        report random-poisson friends-lower-bound ;
+        ]
+
+  ;;
+      if this-number >= 0.20 and this-number < 0.60 [ ;
+        report random-poisson friends-medium-bound ;
+        ]
+
+  ;;
+      if this-number >= 0.60 [ ;
+        report random-poisson friends-higher-bound
+        ]
+
+end
+
 to set-my-friends ; @@@
+
+
+  if network-structure = "standard" [
   ask ppls [
-   set my-friends n-of random-float 50 other ppls
+
+    if bias = "democrat" [
+    set my-dem-friends n-of my-dem-friends-standard-democrat other ppls with [(bias = "democrat")]
+    set my-rep-friends n-of my-rep-friends-standard-democrat other ppls with [(bias = "republican")]
+
+    ]
+
+    if bias = "republican" [
+    set my-dem-friends n-of my-dem-friends-standard-republican other ppls with [(bias = "democrat")]
+    set my-rep-friends n-of my-rep-friends-standard-republican other ppls with [(bias = "republican")]
+    ]
   ]
+  ]
+
 end
 
 to-report my-biass
@@ -410,6 +601,32 @@ to color-bias
   ]
 
 end
+
+to-report my-attitudee
+  let this-number random-float 1
+  ifelse this-number < 0.8 [ ;80% of pop neutrals
+      report 1
+  ][
+      report 2
+  ]
+
+end
+
+to set-my-attitude
+ask ppls [
+    if my-attitudee = 1 [
+      set my-attitude "neutral"
+    ]
+
+        if my-attitudee = 2 [
+      set my-attitude "extremist"
+    ]
+  ]
+end
+
+;to update-my-attitude ;;@@will be needed prob
+;
+;end
 
 to-report nr-links
   report count links
@@ -478,7 +695,7 @@ BUTTON
 129
 NIL
 go
-NIL
+T
 1
 T
 OBSERVER
@@ -494,7 +711,7 @@ INPUTBOX
 67
 78
 nr-ppls
-200.0
+30.0
 1
 0
 Number
@@ -538,6 +755,83 @@ MONITOR
 627
 NIL
 nr-links
+17
+1
+11
+
+MONITOR
+593
+26
+743
+71
+NIL
+nr-dem-shares-democrat
+17
+1
+11
+
+INPUTBOX
+9
+327
+164
+387
+friends-lower-bound
+3.0
+1
+0
+Number
+
+INPUTBOX
+7
+396
+162
+456
+friends-medium-bound
+5.0
+1
+0
+Number
+
+INPUTBOX
+2
+461
+157
+521
+friends-higher-bound
+7.0
+1
+0
+Number
+
+MONITOR
+592
+74
+738
+119
+NIL
+nr-rep-shares-democrat
+17
+1
+11
+
+MONITOR
+1039
+25
+1189
+70
+NIL
+nr-rep-shares-republican
+17
+1
+11
+
+MONITOR
+1035
+72
+1190
+117
+NIL
+nr-dem-shares-republican
 17
 1
 11
