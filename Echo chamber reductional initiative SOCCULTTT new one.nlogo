@@ -5,7 +5,7 @@ globals [
   nr-rep-shares-democrat ; number of republican shares received for democrats
 
   nr-dem-shares-republican ; number of democratic shares received for republicans
-  nr-rep-shares-republican
+  nr-rep-shares-republican ;THESE 4 ARE THE OUTPUT OF THE MDOEL
 
 ]
 
@@ -17,11 +17,13 @@ breed [ppls ppl]
 dem-medias-own [
   name
   my-ppls
+  shared-bias
 ]
 
 rep-medias-own [
   name
   my-ppls
+  shared-bias
 ]
 
 ppls-own [
@@ -35,6 +37,10 @@ ppls-own [
   shared-bias ;what bias the ppl will emit this tick. 2levels, "dem" and "rep"
   my-attitude
 
+  my-nr-dem-belief-democrat ;used for changing biases and attitudes in to go. Output measure still the global count.
+  my-nr-rep-belief-democrat
+  my-nr-dem-belief-republican
+  my-nr-rep-belief-republican
 
 ]
 
@@ -63,8 +69,10 @@ to go
   color-bias
 
   information-spread
+  count-my-exposure
 
-
+  update-bias
+  update-my-attitude
   reset-shared-bias ;the bias the agent emits this tick - as a consequence of how many links or whether extremist or not
   tick
 
@@ -119,7 +127,7 @@ to information-spread
 
 
   ask ppls [
-   if network-structure = "standard" [
+   ;if network-structure = "standard" [
    if bias = "democrat" [
       set nr-dem-shares-democrat nr-dem-shares-democrat + my-nr-dem-medias-standard-democrat
       set nr-dem-shares-democrat nr-dem-shares-democrat + count link-neighbors with [shared-bias = "dem"]
@@ -128,11 +136,11 @@ to information-spread
       set nr-rep-shares-democrat nr-rep-shares-democrat + count link-neighbors with [shared-bias = "rep"]
 
   ]
-  ]
+  ;]
   ]
 
     ask ppls [
-   if network-structure = "standard" [
+   ;if network-structure = "standard" [
    if bias = "republican" [
       set nr-rep-shares-republican nr-rep-shares-republican + my-nr-rep-medias-standard-republican
       set nr-rep-shares-republican nr-rep-shares-republican + count link-neighbors with [shared-bias = "rep"]
@@ -141,7 +149,7 @@ to information-spread
       set nr-dem-shares-republican nr-dem-shares-republican + count link-neighbors with [shared-bias = "dem"]
 
   ]
-  ]
+  ;]
   ]
 
 end
@@ -155,15 +163,62 @@ to reset-shared-bias
 
 end
 
-to update-attitude
+to count-my-exposure
+    ask ppls [
+   ;if network-structure = "standard" [
+   if bias = "democrat" [
+      set my-nr-dem-belief-democrat my-nr-dem-belief-democrat + my-nr-dem-medias-standard-democrat
+      set my-nr-dem-belief-democrat my-nr-dem-belief-democrat + count link-neighbors with [shared-bias = "dem"]
 
+      set my-nr-rep-belief-democrat my-nr-rep-belief-democrat + my-nr-rep-medias-standard-democrat
+      set my-nr-rep-belief-democrat my-nr-rep-belief-democrat + count link-neighbors with [shared-bias = "rep"]
+
+  ]
+  ;]
+  ]
+
+    ask ppls [
+   ;if network-structure = "standard" [
+   if bias = "republican" [
+      set my-nr-rep-belief-republican my-nr-rep-belief-republican + my-nr-rep-medias-standard-republican
+      set my-nr-rep-belief-republican my-nr-rep-belief-republican + count link-neighbors with [shared-bias = "rep"]
+
+      set my-nr-dem-belief-republican my-nr-dem-belief-republican + my-nr-dem-medias-standard-republican
+      set my-nr-dem-belief-republican my-nr-dem-belief-republican + count link-neighbors with [shared-bias = "dem"]
+
+  ]
+  ;]
+  ]
+end
+
+
+
+to update-my-attitude
+
+ ask ppls [
+
+ if (my-nr-rep-belief-republican * extremist-x) < my-nr-dem-belief-republican or (my-nr-dem-belief-republican * extremist-x) < my-nr-rep-belief-republican  [ ;if
+    set my-attitude "extremist"
+  ]
+
+ if (my-nr-rep-belief-democrat * extremist-x) < my-nr-dem-belief-democrat or (my-nr-dem-belief-democrat * extremist-x) < my-nr-rep-belief-democrat [
+    set my-attitude "extremist"
+    ]
+
+]
 
 end
+
 
 to update-bias
 
 end
 
+to-report sd-my-nr-rep-belief-republican
+
+end
+
+;;                                  USED IN SETUP
 to make-dem-medias
 
   let station-names ["1" "2" "3"]
@@ -177,6 +232,7 @@ to make-dem-medias
    set shape "house" set size 2 ;find better shape @@@
    set name first station-names
    set station-names but-first station-names ;removes the first item from the name list (since it's now taken) (this code block is run by one station at a time)
+   set shared-bias "nothing"
 
 
    ;;positions:
@@ -203,6 +259,7 @@ to make-rep-medias
    set shape "house" set size 2 ;find better shape @@@
    set name first station-names
    set station-names but-first station-names ;removes the first item from the name list (since it's now taken) (this code block is run by one station at a time)
+   set shared-bias "nothing"
 
 
     ;;positions
@@ -237,17 +294,18 @@ end
 
 
 to make-network
-    ask ppls [
-   ;create-links-with my-dem-medias
-   ;create-links-with my-rep-medias
+   ask ppls [
+   create-links-with my-dem-medias
+   create-links-with my-rep-medias
    create-links-with my-dem-friends
    create-links-with my-rep-friends
   ]
 
 end
 
+;;;                TO REPORTS FOR CREATING PPLS TO MEDIA NETWORK STRUCTURE
 to-report my-nr-dem-medias-standard-democrat ; For the bias = democrat
-
+  if network-structure = "standard" [
   let this-number random-float 1
 
       if this-number < 0.20 [ ;
@@ -263,93 +321,106 @@ to-report my-nr-dem-medias-standard-democrat ; For the bias = democrat
       if this-number >= 0.60 [ ;
         report 3
         ]
+  ]
 
-end
+  ;echo chamber reduction1
 
-to-report my-nr-dem-medias-standard-republican ; For the bias = republican
-
+  if network-structure = "echo chamber reduction1" [
   let this-number random-float 1
 
-      if this-number < 0.2 [ ;
-        report 0 ;
-        ]
-
-  ;;
-      if this-number >= 0.2 and this-number < 0.60 [ ;
-        report 1 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
-        ]
-
-  ;;
-      if this-number >= 0.60 and this-number < 0.80 [ ;
-        report 2
-        ]
-
-  ;;
-      if this-number >= 0.80 [ ;
-        report 3
-        ]
-
-
-end
-
-to-report my-nr-rep-medias-standard-democrat ; For the bias = democrats
-
-  let this-number random-float 1
-
-      if this-number < 0.2 [ ;
-        report 0 ;
-        ]
-
-  ;;
-      if this-number >= 0.2 and this-number < 0.60 [ ;
-        report 1 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
-        ]
-
-  ;;
-      if this-number >= 0.60 and this-number < 0.80 [ ;
-        report 2
-        ]
-
-  ;;
-      if this-number >= 0.80 [ ;
-        report 3
-        ]
-
-end
-
-to-report my-nr-rep-medias-standard-republican
-
-  let this-number random-float 1
-
-      if this-number < 0.20 [ ;
+    if this-number < 0.33 [ ;
         report 1 ;
         ]
 
   ;;
-      if this-number >= 0.20 and this-number < 0.60 [ ;
+      if this-number >= 0.33 and this-number < 0.66 [ ;
         report 2 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
         ]
 
   ;;
-      if this-number >= 0.60 [ ;
+      if this-number >= 0.66 [ ;
         report 3
         ]
 
+
+  ]
+
 end
 
-
-;to-report my-nr-dem-medias-echo1-bias1
-
-
-
+;to-report my-nr-dem-medias-echo1-democrat
+;
+;  if network-structure = "echo chamber reduction1" [
+;  let this-number random-float 1
+;
+;    if this-number < 0.33 [ ;
+;        report 1 ;
+;        ]
+;
+;  ;;
+;      if this-number >= 0.33 and this-number < 0.66 [ ;
+;        report 2 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+;        ]
+;
+;  ;;
+;      if this-number >= 0.66 [ ;
+;        report 3
+;        ]
+;
+;
+;  ]
 ;end
 
+to-report my-nr-dem-medias-standard-republican ; For the bias = republican
+  if network-structure = "standard"[
+  let this-number random-float 1
+
+      if this-number < 0.2 [ ;
+        report 0 ;
+        ]
+
+  ;;
+      if this-number >= 0.2 and this-number < 0.60 [ ;
+        report 1 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+        ]
+
+  ;;
+      if this-number >= 0.60 and this-number < 0.80 [ ;
+        report 2
+        ]
+
+  ;;
+      if this-number >= 0.80 [ ;
+        report 3
+        ]
+
+        ];standard end
+
+
+   if network-structure = "echo chamber reduction1" [
+  let this-number random-float 1
+
+      if this-number < 0.33 [ ;
+        report 1 ;
+        ]
+
+  ;;
+      if this-number >= 0.33 and this-number < 0.66 [ ;
+        report 2 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+        ]
+
+  ;;
+      if this-number >= 0.66 [ ;
+        report 3
+        ]
+
+        ] ;echo chamber reduction1 end
+
+end
+
+;to-report my-nr-dem-medias-echo1-republican
+;  if network-structure = "echo chamber reduction1" [
+;  let this-number random-float 1
 ;
-;
-;  ;                                                     ECHO CHAMBER REDUCTION 1 start
-;  if network-structure = "echo chamber reduction1" [ ;Everyone
-;    ;;                         ppls with BIAS = 1
-;    if bias = "1" [
 ;      if this-number < 0.33 [ ;
 ;        report 1 ;
 ;        ]
@@ -363,11 +434,64 @@ end
 ;      if this-number >= 0.66 [ ;
 ;        report 3
 ;        ]
-;      ]
 ;
-;  ;;                          ppls with BIAS = 2
-;      if bias = "2" [
-;      if this-number < 0.50 [ ;
+;        ] ;echo chamber reduction1 end
+;
+;
+;end
+
+
+to-report my-nr-rep-medias-standard-democrat ; For the bias = democrats
+  if network-structure = "standard" [
+  let this-number random-float 1
+
+      if this-number < 0.2 [ ;
+        report 0 ;
+        ]
+
+  ;;
+      if this-number >= 0.2 and this-number < 0.60 [ ;
+        report 1 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+        ]
+
+  ;;
+      if this-number >= 0.60 and this-number < 0.80 [ ;
+        report 2
+        ]
+
+  ;;
+      if this-number >= 0.80 [ ;
+        report 3
+        ]
+
+  ] ;STANDARD END
+
+  if network-structure = "echo chamber reduction1" [
+  let this-number random-float 1
+          if this-number < 0.50 [ ;
+        report 1 ;
+        ]
+
+  ;;
+      if this-number >= 0.50 and this-number < 0.75 [ ;
+        report 2
+        ]
+
+  ;;
+      if this-number >= 0.75 [ ;
+        report 3
+        ]
+
+        ] ;echo chamber reduction1 end
+
+end
+
+
+;to-report my-nr-rep-medias-echo1-democrat
+;
+;  if network-structure = "echo chamber reduction1" [
+;  let this-number random-float 1
+;          if this-number < 0.50 [ ;
 ;        report 1 ;
 ;        ]
 ;
@@ -380,9 +504,76 @@ end
 ;      if this-number >= 0.75 [ ;
 ;        report 3
 ;        ]
-;      ]
 ;
-;  ] ;                                                     ECHO CHAMBER 1 END
+;        ] ;echo chamber reduction1 end
+;
+;end
+
+to-report my-nr-rep-medias-standard-republican
+  if network-structure = "standard" [
+  let this-number random-float 1
+
+      if this-number < 0.20 [ ;
+        report 1 ;
+        ]
+
+  ;;
+      if this-number >= 0.20 and this-number < 0.60 [ ;
+        report 2 ;if report 1, then the person will get 1 bias1 in their set-my-stations. Hereby 1 bias1 in their network.
+        ]
+
+  ;;
+      if this-number >= 0.60 [ ;
+        report 3
+        ]
+
+  ] ;STANDARD END
+
+  if network-structure = "echo chamber reduction1" [
+  let this-number random-float 1
+        if this-number < 0.50 [ ;
+        report 1 ;
+        ]
+
+  ;;
+      if this-number >= 0.50 and this-number < 0.75 [ ;
+        report 2
+        ]
+
+  ;;
+      if this-number >= 0.75 [ ;
+        report 3
+        ]
+
+        ] ;echo chamber reduction1 end
+
+end
+
+
+;to-report my-nr-rep-medias-echo1-republican
+;
+;  if network-structure = "echo chamber reduction1" [
+;  let this-number random-float 1
+;        if this-number < 0.50 [ ;
+;        report 1 ;
+;        ]
+;
+;  ;;
+;      if this-number >= 0.50 and this-number < 0.75 [ ;
+;        report 2
+;        ]
+;
+;  ;;
+;      if this-number >= 0.75 [ ;
+;        report 3
+;        ]
+;
+;        ] ;echo chamber reduction1 end
+;
+;end
+
+
+;to-report my-nr-dem-medias-echo1-bias1
 ;
 ;
 ;    ;                                                     ECHO CHAMBER REDUCTION 2 start
@@ -426,10 +617,8 @@ end
 
 ;end
 
-;; @@@@ VI GØR DET OMVENDT :D:D:D:D Vi kalder en specific to-report i set-my-stations. ask ppls --> if bias = 1 --> set my-stations1 n-of my-nr-dem-medias-echo1-bias1
-
 to set-my-stations
-  if network-structure = "standard" [
+  ;if network-structure = "standard" [
   ask ppls [
 
     if bias = "democrat" [
@@ -443,12 +632,29 @@ to set-my-stations
     set my-rep-medias n-of my-nr-rep-medias-standard-republican rep-medias
     ]
   ]
-  ]
+  ;]
 
 
+;  if network-structure = "echo chamber reduction1" [
+;  ask ppls [
+;
+;    if bias = "democrat" [
+;    set my-dem-medias n-of my-nr-dem-medias-standard-democrat dem-medias ;@@tester (c
+;    set my-rep-medias n-of my-nr-rep-medias-echo1-democrat rep-medias
+;
+;    ]
+;
+;    if bias = "republican" [
+;    set my-dem-medias n-of my-nr-dem-medias-echo1-republican dem-medias
+;    set my-rep-medias n-of my-nr-rep-medias-echo1-republican rep-medias
+;    ]
+;  ]
+;  ]
 
 end
 
+
+;;;;;;;;;                                               TO REPORTS FOR PPLS TO PPLS NETWORK STRUCTURE
 ; IF i cannot run the model then i will prob have to make the amount of friends an abstraction. Meaning that it is a number corresponding to the amount of ppl in your network that you actually get something from
 ;on your startpage regularly. it wouldn't make sense to make a network with 300 friends pr. person - even though it might be the case in real life. This is because we would need to have 500k ppl+ in the model.
 to-report my-dem-friends-standard-democrat ; for the bias = democrat
@@ -546,7 +752,7 @@ end
 to set-my-friends ; @@@
 
 
-  if network-structure = "standard" [
+  ;if network-structure = "standard" [
   ask ppls [
 
     if bias = "democrat" [
@@ -560,7 +766,7 @@ to set-my-friends ; @@@
     set my-rep-friends n-of my-rep-friends-standard-republican other ppls with [(bias = "republican")]
     ]
   ]
-  ]
+  ;]
 
 end
 
@@ -592,11 +798,11 @@ to color-bias
 
   ask ppls [
    if bias = "democrat" [
-     set color green
+     set color blue
     ]
 
    if bias = "republican" [
-     set color orange
+     set color red
     ]
   ]
 
@@ -627,6 +833,10 @@ end
 ;to update-my-attitude ;;@@will be needed prob
 ;
 ;end
+
+to-report nr-extremists
+report count ppls with [my-attitude = "extremist"]
+end
 
 to-report nr-links
   report count links
@@ -711,7 +921,7 @@ INPUTBOX
 67
 78
 nr-ppls
-30.0
+60.0
 1
 0
 Number
@@ -723,8 +933,8 @@ CHOOSER
 259
 network-structure
 network-structure
-"standard" "echo chamber reduction1" "echo chamber reduction2" "echo chamber reduction3"
-0
+"standard" "echo chamber reduction1" "echo chamber reduction2"
+1
 
 INPUTBOX
 209
@@ -776,7 +986,7 @@ INPUTBOX
 164
 387
 friends-lower-bound
-3.0
+5.0
 1
 0
 Number
@@ -787,7 +997,7 @@ INPUTBOX
 162
 456
 friends-medium-bound
-5.0
+7.0
 1
 0
 Number
@@ -798,7 +1008,7 @@ INPUTBOX
 157
 521
 friends-higher-bound
-7.0
+9.0
 1
 0
 Number
@@ -832,6 +1042,28 @@ MONITOR
 117
 NIL
 nr-dem-shares-republican
+17
+1
+11
+
+INPUTBOX
+1
+566
+156
+626
+extremist-x
+2.0
+1
+0
+Number
+
+MONITOR
+588
+535
+675
+580
+NIL
+nr-extremists
 17
 1
 11
