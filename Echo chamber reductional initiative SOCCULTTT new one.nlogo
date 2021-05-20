@@ -79,9 +79,9 @@ to go
   ;reset-shared-bias ;DOESN^T WORK FOR SOME REASON. seems like the agents don't really share ;the bias the agent emits this tick - as a consequence of how many links or whether extremist or not
   tick
 
-;  if ticks = 33 [
-;    stop
-;  ]
+  if ticks = 50 [
+    stop
+  ]
 end
 
 to set-shared-bias
@@ -870,7 +870,7 @@ INPUTBOX
 224
 81
 nr-ppls
-500.0
+5000.0
 1
 0
 Number
@@ -1120,7 +1120,7 @@ INPUTBOX
 1389
 418
 echo1-opposite-1
-0.5
+0.6
 1
 0
 Number
@@ -1131,7 +1131,7 @@ INPUTBOX
 1389
 480
 echo1-opposite-2
-0.75
+0.8
 1
 0
 Number
