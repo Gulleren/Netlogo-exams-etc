@@ -7,6 +7,10 @@ globals [
   nr-dem-shares-republican ; number of democratic shares received for republicans
   nr-rep-shares-republican ;THESE 4 ARE THE OUTPUT OF THE MDOEL
 
+
+nr-bias-changes
+nr-new-democrats
+nr-new-republicans
   ;sd-nr-rep-belief-republican ;probably a reporter rather than a global variable. we'll see.
 
 ]
@@ -79,7 +83,7 @@ to go
   ;reset-shared-bias ;DOESN^T WORK FOR SOME REASON. seems like the agents don't really share ;the bias the agent emits this tick - as a consequence of how many links or whether extremist or not
   tick
 
-  if ticks = 50 [
+  if ticks = 8 [
     stop
   ]
 end
@@ -219,12 +223,16 @@ to update-bias
 
  ask ppls [
 
-  if (my-nr-dem-belief * bias-x) < my-nr-rep-belief [
+  if (my-nr-dem-belief * bias-x) < my-nr-rep-belief and bias = "democrat" [
     set bias "republican"
+    set nr-new-republicans nr-new-republicans + 1
+    set nr-bias-changes nr-bias-changes + 1
     ]
 
- if (my-nr-rep-belief * bias-x) < my-nr-dem-belief [
+ if (my-nr-rep-belief * bias-x) < my-nr-dem-belief and bias = "republican" [
     set bias "democrat"
+    set nr-new-democrats nr-new-democrats + 1
+    set nr-bias-changes nr-bias-changes + 1
   ]
 
 
@@ -589,6 +597,31 @@ to set-my-stations
 end
 
 
+
+to set-my-stations-make-network
+  ask ppls [
+
+    if bias = "democrat" and my-nr-rep-medias-standard-democrat = 0 [
+    ;set my-dem-medias n-of my-nr-dem-medias-standard-democrat dem-medias
+    set my-rep-medias n-of 2 rep-medias
+
+    ]
+
+    if bias = "republican" and my-nr-dem-medias-standard-republican = 0 [
+    ;set my-dem-medias n-of my-nr-dem-medias-standard-republican dem-medias
+    set my-rep-medias n-of 2 rep-medias
+    ]
+  ]
+
+
+ ask ppls [
+   create-links-with my-dem-medias
+   create-links-with my-rep-medias
+  ]
+
+end
+
+
 ;;;;;;;;;                                               TO REPORTS FOR PPLS TO PPLS NETWORK STRUCTURE
 ; IF i cannot run the model then i will prob have to make the amount of friends an abstraction. Meaning that it is a number corresponding to the amount of ppl in your network that you actually get something from
 ;on your startpage regularly. it wouldn't make sense to make a network with 300 friends pr. person - even though it might be the case in real life. This is because we would need to have 500k ppl+ in the model.
@@ -870,7 +903,7 @@ INPUTBOX
 224
 81
 nr-ppls
-5000.0
+1000.0
 1
 0
 Number
@@ -883,7 +916,7 @@ CHOOSER
 network-structure
 network-structure
 "standard" "echo chamber reduction1" "echo chamber reduction2"
-0
+2
 
 MONITOR
 487
@@ -979,7 +1012,7 @@ INPUTBOX
 433
 236
 bias-x
-1.3
+1.1
 1
 0
 Number
@@ -1029,10 +1062,10 @@ nr-ppls-sharing-rep
 11
 
 PLOT
-1095
-311
-1417
-508
+1100
+317
+1388
+513
 % of total information received (y-value * 100 = % of total information)
 time
 % of total
@@ -1233,47 +1266,32 @@ echo2
 1
 
 PLOT
-27
-336
-408
-645
-Nr of republicans and democrats
-NIL
-NIL
+32
+299
+413
+608
+Number of changes in bias
+Time
+Number
 0.0
 10.0
 0.0
 10.0
 true
-false
+true
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -14070903 true "" "if ticks > 0 [ plot nr-new-democrats ]"
+"pen-1" 1.0 0 -5298144 true "" "if ticks > 0 [ plot nr-new-republicans ]"
+"pen-2" 1.0 0 -1184463 true "" "if ticks > 0 [ plot nr-bias-changes ]"
 
 BUTTON
 265
 74
-436
+466
 107
 NIL
-echo1-intervention
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-266
-109
-436
-143
-NIL
-echo2-intervention
+set-my-stations-make-network
 NIL
 1
 T
