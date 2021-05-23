@@ -88,6 +88,10 @@ to go
   ]
 end
 
+to do-stuff
+  set-my-stations-make-network
+end
+
 to set-shared-bias
 
   ;;; SETTING shared-bias each tick
@@ -603,13 +607,13 @@ to set-my-stations-make-network
 
     if bias = "democrat" and my-nr-rep-medias-standard-democrat = 0 [
     ;set my-dem-medias n-of my-nr-dem-medias-standard-democrat dem-medias
-    set my-rep-medias n-of 2 rep-medias
+    set my-rep-medias n-of 6 rep-medias
 
     ]
 
     if bias = "republican" and my-nr-dem-medias-standard-republican = 0 [
     ;set my-dem-medias n-of my-nr-dem-medias-standard-republican dem-medias
-    set my-rep-medias n-of 2 rep-medias
+    set my-rep-medias n-of 6 rep-medias
     ]
   ]
 
@@ -916,7 +920,7 @@ CHOOSER
 network-structure
 network-structure
 "standard" "echo chamber reduction1" "echo chamber reduction2"
-2
+0
 
 MONITOR
 487
@@ -968,7 +972,7 @@ INPUTBOX
 123
 232
 friends-higher-bound
-6.0
+8.0
 1
 0
 Number
@@ -1062,10 +1066,10 @@ nr-ppls-sharing-rep
 11
 
 PLOT
-1100
-317
-1388
-513
+606
+284
+1089
+625
 % of total information received (y-value * 100 = % of total information)
 time
 % of total
@@ -1291,7 +1295,7 @@ BUTTON
 466
 107
 NIL
-set-my-stations-make-network
+do-stuff
 NIL
 1
 T
