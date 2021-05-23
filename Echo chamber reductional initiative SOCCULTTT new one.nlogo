@@ -883,7 +883,7 @@ CHOOSER
 network-structure
 network-structure
 "standard" "echo chamber reduction1" "echo chamber reduction2"
-2
+0
 
 MONITOR
 487
@@ -1029,10 +1029,10 @@ nr-ppls-sharing-rep
 11
 
 PLOT
-0
-279
-458
-642
+1095
+311
+1417
+508
 % of total information received (y-value * 100 = % of total information)
 time
 % of total
@@ -1115,10 +1115,10 @@ standard-same-2
 Number
 
 INPUTBOX
-1293
-358
-1389
+1307
 418
+1403
+478
 echo1-opposite-1
 0.6
 1
@@ -1126,10 +1126,10 @@ echo1-opposite-1
 Number
 
 INPUTBOX
-1291
-420
-1389
+1305
 480
+1403
+540
 echo1-opposite-2
 0.8
 1
@@ -1137,10 +1137,10 @@ echo1-opposite-2
 Number
 
 INPUTBOX
-1391
-358
-1493
+1405
 418
+1507
+478
 echo1-same-1
 0.1
 1
@@ -1148,10 +1148,10 @@ echo1-same-1
 Number
 
 INPUTBOX
-1392
-421
-1494
+1406
 481
+1508
+541
 echo1-same-2
 0.55
 1
@@ -1213,10 +1213,10 @@ Standard\n
 1
 
 TEXTBOX
-1376
-336
-1526
-354
+1420
+396
+1570
+414
 echo1\n
 11
 0.0
@@ -1230,6 +1230,58 @@ TEXTBOX
 echo2
 11
 0.0
+1
+
+PLOT
+27
+336
+408
+645
+Nr of republicans and democrats
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles"
+
+BUTTON
+265
+74
+436
+107
+NIL
+echo1-intervention
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+266
+109
+436
+143
+NIL
+echo2-intervention
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
 1
 
 @#$#@#$#@
