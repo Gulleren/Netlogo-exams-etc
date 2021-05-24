@@ -44,7 +44,7 @@ ppls-own [
   status
   bias ; 2 levels, democrat or republican ""
   shared-bias ;what bias the ppl will emit this tick. 2levels, "dem" and "rep"
-  my-attitude
+  ;my-attitude
 
   my-nr-dem-belief-democrat ;used for changing biases and attitudes in to go. Output measure still the global count.
   my-nr-rep-belief-democrat
@@ -70,7 +70,7 @@ to setup
   set-my-bias
   set-my-stations
   set-my-friends
-  set-my-attitude ;didn't work
+  ;set-my-attitude ;didn't work
 
   make-network
 
@@ -86,7 +86,7 @@ to go
   update-bias
   color-bias
 
-  update-my-attitude ;Attitude is bugged...
+  ;update-my-attitude ;Attitude is bugged...
   ;reset-shared-bias ;DOESN^T WORK FOR SOME REASON. seems like the agents don't really share ;the bias the agent emits this tick - as a consequence of how many links or whether extremist or not
   tick
 
@@ -215,21 +215,21 @@ end
 
 
 
-to update-my-attitude
-
- ask ppls [
-
- if (my-nr-rep-belief * extremist-x) < (my-nr-dem-belief) [
-    set my-attitude "extremist"
-  ]
-
- if (my-nr-dem-belief * extremist-x) < (my-nr-rep-belief) [
-    set my-attitude "extremist"
-    ]
-
-]
-
-end
+;to update-my-attitude
+;
+; ask ppls [
+;
+; if (my-nr-rep-belief / extremist-x) > (my-nr-dem-belief) [
+;    set my-attitude "extremist"
+;  ]
+;
+; if (my-nr-dem-belief / extremist-x) > (my-nr-rep-belief) [
+;    set my-attitude "extremist"
+;    ]
+;
+;]
+;
+;end
 
 
 to update-bias
@@ -393,16 +393,59 @@ end
 
 to echo1-intervention
   ask ppls [
+    ifelse half-of-pop-in-echo-chamber? [
+    if bias = "democrat" and status = "taken" and random-float 1 > 0.5 [
+    ;set my-dem-medias n-of my-nr-dem-medias-standard-democrat dem-medias
+    set my-rep-medias n-of 2 rep-medias
+      ]
+
+    if bias = "republican" and status = "taken" and random-float 1 > 0.5 [
+    ;set my-dem-medias n-of my-nr-dem-medias-standard-republican dem-medias
+    set my-dem-medias n-of 2 dem-medias
+      ]
+
+    ][
 
     if bias = "democrat" and status = "taken" [
     ;set my-dem-medias n-of my-nr-dem-medias-standard-democrat dem-medias
     set my-rep-medias n-of 2 rep-medias
-
-    ]
+      ]
 
     if bias = "republican" and status = "taken" [
     ;set my-dem-medias n-of my-nr-dem-medias-standard-republican dem-medias
     set my-dem-medias n-of 2 dem-medias
+      ]
+
+
+
+  ]
+  ]
+
+
+
+
+ ask ppls [
+   create-links-with my-dem-medias
+   create-links-with my-rep-medias
+  ]
+
+end
+
+
+to echo2-intervention
+  ask ppls [
+
+    if bias = "democrat" and status = "taken" [
+    ;set my-dem-medias n-of my-nr-dem-medias-standard-democrat dem-medias
+    set my-rep-medias n-of 6 rep-medias
+
+    ]
+
+
+
+    if bias = "republican" and status = "taken" [
+    ;set my-dem-medias n-of my-nr-dem-medias-standard-republican dem-medias
+    set my-dem-medias n-of 6 dem-medias
     ]
   ]
 
@@ -413,6 +456,7 @@ to echo1-intervention
   ]
 
 end
+
 
 to set-my-friends
   ;DEMS
@@ -504,30 +548,30 @@ to color-bias
 
 end
 
-to-report my-attitudee
-  let this-number random-float 1
-  ifelse this-number < 0.90 [ ;80% of pop neutrals
-      report 1
-  ][
-      report 2
-  ]
-
-end
-
-to set-my-attitude
-ask ppls [
-    if my-attitudee = 1 [
-      set my-attitude "neutral"
-    ]
-
-      if my-attitudee = 2 [
-      set my-attitude "extremist"
-    ]
-  ]
-end
-to-report nr-extremists
-report count ppls with [my-attitude = "extremist"]
-end
+;to-report my-attitudee
+;  let this-number random-float 1
+;  ifelse this-number < 0.90 [ ;80% of pop neutrals
+;      report 1
+;  ][
+;      report 2
+;  ]
+;
+;end
+;
+;to set-my-attitude
+;ask ppls [
+;    if my-attitudee = 1 [
+;      set my-attitude "neutral"
+;    ]
+;
+;      if my-attitudee = 2 [
+;      set my-attitude "extremist"
+;    ]
+;  ]
+;end
+;to-report nr-extremists
+;report count ppls with [my-attitude = "extremist"]
+;end
 
 
 to-report nr-democrats
@@ -563,10 +607,10 @@ report count link-neighbors
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-480
-15
-1094
-630
+319
+22
+933
+637
 -1
 -1
 18.364
@@ -590,10 +634,10 @@ ticks
 30.0
 
 BUTTON
-124
-82
-187
-115
+135
+371
+198
+404
 NIL
 setup
 NIL
@@ -607,10 +651,10 @@ NIL
 1
 
 BUTTON
-199
-82
-263
-116
+210
+371
+274
+405
 NIL
 go
 T
@@ -624,10 +668,10 @@ NIL
 1
 
 INPUTBOX
-169
-21
-224
-81
+8
+364
+76
+429
 nr-ppls
 1000.0
 1
@@ -635,10 +679,10 @@ nr-ppls
 Number
 
 MONITOR
-487
-579
-569
-624
+326
+586
+408
+631
 NIL
 nr-links
 17
@@ -646,10 +690,10 @@ nr-links
 11
 
 MONITOR
-488
-25
-638
-70
+327
+32
+477
+77
 NIL
 nr-dem-shares-democrat
 17
@@ -657,10 +701,10 @@ nr-dem-shares-democrat
 11
 
 MONITOR
-488
-75
-638
-120
+327
+82
+477
+127
 NIL
 nr-rep-shares-democrat
 17
@@ -668,10 +712,10 @@ nr-rep-shares-democrat
 11
 
 MONITOR
-930
-24
-1083
-69
+769
+31
+922
+76
 NIL
 nr-rep-shares-republican
 17
@@ -679,10 +723,10 @@ nr-rep-shares-republican
 11
 
 MONITOR
-930
-73
-1085
-118
+769
+80
+924
+125
 NIL
 nr-dem-shares-republican
 17
@@ -690,10 +734,10 @@ nr-dem-shares-republican
 11
 
 INPUTBOX
-15
-82
-85
-142
+7
+433
+77
+493
 bias-x
 1.3
 1
@@ -701,10 +745,10 @@ bias-x
 Number
 
 MONITOR
-994
-578
-1086
-623
+833
+585
+925
+630
 NIL
 nr-republicans
 17
@@ -712,10 +756,10 @@ nr-republicans
 11
 
 MONITOR
-994
-531
-1086
-576
+833
+538
+925
+583
 NIL
 nr-democrats
 17
@@ -723,10 +767,10 @@ nr-democrats
 11
 
 MONITOR
-867
-532
-991
-577
+706
+539
+830
+584
 NIL
 nr-ppls-sharing-dem
 17
@@ -734,10 +778,10 @@ nr-ppls-sharing-dem
 11
 
 MONITOR
-867
-577
-991
-622
+706
+584
+830
+629
 NIL
 nr-ppls-sharing-rep
 17
@@ -745,10 +789,10 @@ nr-ppls-sharing-rep
 11
 
 PLOT
-48
-370
-469
-665
+956
+332
+1479
+632
 % of total information received (y-value * 100 = % of total information)
 time
 % of total
@@ -765,194 +809,11 @@ PENS
 "Republican receiving Republican info" 1.0 0 -2674135 true "" "if ticks > 0 [ plot nr-rep-shares-republican / (nr-rep-shares-republican + nr-rep-shares-democrat + nr-dem-shares-democrat + nr-dem-shares-republican)]"
 "Republicans receiving Democratic info" 1.0 0 -817084 true "" "if ticks > 0 [ plot nr-dem-shares-republican / (nr-dem-shares-republican + nr-dem-shares-democrat + nr-rep-shares-republican + nr-dem-shares-republican)]"
 
-TEXTBOX
-1261
-14
-1466
-99
-The % of people getting either 0, 2, 4 or 6 medias in their network\n(look under \"my-nr-dem-medias-standard-democrat\" to understand. 
-14
-0.0
-1
-
-INPUTBOX
-1098
-128
-1228
-188
-standard-opposite-0
-0.2
-1
-0
-Number
-
-INPUTBOX
-1098
-189
-1228
-249
-standard-opposite-1
-0.6
-1
-0
-Number
-
-INPUTBOX
-1097
-249
-1229
-309
-standard-opposite-2
-0.8
-1
-0
-Number
-
-INPUTBOX
-1231
-129
-1386
-189
-standard-same-1
-0.1
-1
-0
-Number
-
-INPUTBOX
-1233
-194
-1388
-254
-standard-same-2
-0.55
-1
-0
-Number
-
-INPUTBOX
-1307
-418
-1403
-478
-echo1-opposite-1
-0.6
-1
-0
-Number
-
-INPUTBOX
-1305
-480
-1403
-540
-echo1-opposite-2
-0.8
-1
-0
-Number
-
-INPUTBOX
-1405
-418
-1507
-478
-echo1-same-1
-0.1
-1
-0
-Number
-
-INPUTBOX
-1406
-481
-1508
-541
-echo1-same-2
-0.55
-1
-0
-Number
-
-INPUTBOX
-1097
-534
-1200
-594
-echo2-opposite-1
-0.33
-1
-0
-Number
-
-INPUTBOX
-1098
-597
-1202
-657
-echo2-opposite-2
-0.66
-1
-0
-Number
-
-INPUTBOX
-1204
-534
-1285
-594
-echo2-same-1
-0.33
-1
-0
-Number
-
-INPUTBOX
-1205
-597
-1285
-657
-echo2-same-2
-0.66
-1
-0
-Number
-
-TEXTBOX
-1208
-114
-1358
-132
-Standard\n
-11
-0.0
-1
-
-TEXTBOX
-1420
-396
-1570
-414
-echo1\n
-11
-0.0
-1
-
-TEXTBOX
-1187
-511
-1337
-529
-echo2
-11
-0.0
-1
-
 PLOT
-150
-119
-479
-372
+957
+29
+1477
+327
 Number of changes in bias
 Time
 Number
@@ -969,10 +830,10 @@ PENS
 "pen-2" 1.0 0 -1184463 true "" "if ticks > 0 [ plot nr-bias-changes ]"
 
 BUTTON
-260
-15
-461
-48
+106
+427
+307
+460
 NIL
 echo1-intervention
 NIL
@@ -986,48 +847,54 @@ NIL
 1
 
 INPUTBOX
-15
-239
-106
-299
+113
+275
+204
+335
 stop-after-x-tick
-15.0
+20.0
 1
 0
 Number
 
 INPUTBOX
-15
-299
-105
-359
+206
+274
+296
+334
 stop-after-x-tick2
 65.0
 1
 0
 Number
 
-INPUTBOX
-15
-21
-85
-81
-extremist-x
-40.0
-1
-0
-Number
-
-MONITOR
-998
-457
-1080
-502
+BUTTON
+107
+460
+306
+493
 NIL
-nr-extremists
-17
+echo2-intervention
+NIL
 1
-11
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SWITCH
+107
+506
+327
+539
+half-of-pop-in-echo-chamber?
+half-of-pop-in-echo-chamber?
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
