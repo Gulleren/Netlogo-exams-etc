@@ -142,7 +142,7 @@ to set-shared-bias
         set shared-bias "dem"  ;shared bias = what bias the ppl will emit this tick
       ]
 
-   ifelse count my-rep-medias > count my-dem-medias and random-float 1 < 0.30 [ ;if more rep medias there is 30% chance that rep is shared
+   ifelse count my-rep-medias > count my-dem-medias and random-float 1 < 0.30 [ ;if more rep medias there is 30% chance that rep is shared.
         set shared-bias "rep"
       ][
         set shared-bias "dem"
@@ -180,37 +180,45 @@ end
 to count-my-exposure
 ;;;; FOR UPDATE-MY-ATTITUDE AND UPDATE-BIAS
    ask ppls [
-
    if bias = "democrat" [
       set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias-media = "dem"]
       set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias = "dem"]
+   ]
+   ]
 
-      if random-float 1 < 0.30 [
+   ask ppls[
+    ifelse half-of-pop-in-echo-chamber? [
+    if bias = "democrat" and status = "taken" and random-float 1 > 0.5 [
       set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias-media = "rep"]
-    ]
-      if random-float 1 < 0.30 [
       set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias = "rep"]
+      ]
+    ][
+      set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias-media = "rep"]
+      set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias = "rep"]
+  ]
+  ]
 
-
-  ]
-  ]
-  ]
 
    ask ppls [
-
    if bias = "republican" [
       set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias-media = "rep"]
       set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias = "rep"]
+   ]
+   ]
 
-      if random-float 1 < 0.30 [
+   ask ppls[
+    ifelse half-of-pop-in-echo-chamber? [
+    if bias = "deomcrat" and status = "taken" and random-float 1 > 0.5 [
       set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias-media = "dem"]
-      if random-float 1 < 0.30 [
+      set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias = "dem"]
+      ]
+
+    ][
+      set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias-media = "dem"]
       set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias = "dem"]
 
-  ]
-  ]
-  ]
-  ]
+   ]
+   ]
 end
 
 
@@ -393,18 +401,18 @@ end
 
 to echo1-intervention
   ask ppls [
-    ifelse half-of-pop-in-echo-chamber? [
-    if bias = "democrat" and status = "taken" and random-float 1 > 0.5 [
-    ;set my-dem-medias n-of my-nr-dem-medias-standard-democrat dem-medias
-    set my-rep-medias n-of 2 rep-medias
-      ]
-
-    if bias = "republican" and status = "taken" and random-float 1 > 0.5 [
-    ;set my-dem-medias n-of my-nr-dem-medias-standard-republican dem-medias
-    set my-dem-medias n-of 2 dem-medias
-      ]
-
-    ][
+;    ifelse half-of-pop-in-echo-chamber? [
+;    if bias = "democrat" and status = "taken" and random-float 1 > 0.5 [
+;    ;set my-dem-medias n-of my-nr-dem-medias-standard-democrat dem-medias
+;    set my-rep-medias n-of 2 rep-medias
+;      ]
+;
+;    if bias = "republican" and status = "taken" and random-float 1 > 0.5 [
+;    ;set my-dem-medias n-of my-nr-dem-medias-standard-republican dem-medias
+;    set my-dem-medias n-of 2 dem-medias
+;      ]
+;
+;    ][
 
     if bias = "democrat" and status = "taken" [
     ;set my-dem-medias n-of my-nr-dem-medias-standard-democrat dem-medias
@@ -419,7 +427,7 @@ to echo1-intervention
 
 
   ]
-  ]
+;  ]
 
 
 
@@ -673,7 +681,7 @@ INPUTBOX
 76
 429
 nr-ppls
-1000.0
+5000.0
 1
 0
 Number
@@ -820,14 +828,14 @@ Number
 0.0
 65.0
 0.0
-50.0
-false
+100.0
+true
 true
 "" ""
 PENS
-"default" 1.0 0 -14070903 true "" "if ticks > 0 [ plot nr-new-democrats ]"
-"pen-1" 1.0 0 -5298144 true "" "if ticks > 0 [ plot nr-new-republicans ]"
-"pen-2" 1.0 0 -1184463 true "" "if ticks > 0 [ plot nr-bias-changes ]"
+"new democrats" 1.0 0 -14070903 true "" "if ticks > 0 [ plot nr-new-democrats ]"
+"new republicans" 1.0 0 -5298144 true "" "if ticks > 0 [ plot nr-new-republicans ]"
+"total new bias" 1.0 0 -1184463 true "" "if ticks > 0 [ plot nr-bias-changes ]"
 
 BUTTON
 106
