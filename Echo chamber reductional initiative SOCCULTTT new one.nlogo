@@ -888,7 +888,7 @@ NIL
 SWITCH
 107
 506
-327
+304
 539
 half-of-pop-in-echo-chamber?
 half-of-pop-in-echo-chamber?
