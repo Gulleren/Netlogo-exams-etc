@@ -54,7 +54,7 @@ ppls-own [
   my-nr-rep-belief
 
   shared-bias-media ;these are only here because i cannot navigate link structure properly
-
+  echo-vs-epistemic
 
 ]
 
@@ -73,7 +73,7 @@ to setup
   ;set-my-attitude ;didn't work
 
   make-network
-
+  set-echo-vs-epistemic
 
 
 end
@@ -100,7 +100,7 @@ to go
 end
 
 to do-stuff
-  echo1-intervention
+  mbr1-intervention
 end
 
 to set-shared-bias
@@ -179,6 +179,8 @@ end
 
 to count-my-exposure
 ;;;; FOR UPDATE-MY-ATTITUDE AND UPDATE-BIAS
+
+  ;democrats
    ask ppls [
    if bias = "democrat" [
       set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias-media = "dem"]
@@ -186,19 +188,33 @@ to count-my-exposure
    ]
    ]
 
-   ask ppls[
     ifelse half-of-pop-in-echo-chamber? [
-    if bias = "democrat" and status = "taken" and random-float 1 > 0.5 [
+    ask ppls[
+    if bias = "democrat" and echo-vs-epistemic = "echo" [
+      if random-float 1 < 0.05 [
+      set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias-media = "rep"]
+      set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias = "rep"]
+        ]
+      ]
+    if bias = "democrat" and echo-vs-epistemic = "epistemic" [
       set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias-media = "rep"]
       set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias = "rep"]
       ]
-    ][
+    ]
+
+    ][ ;ELSE
+    ask ppls [
+    if bias = "democrat" [
       set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias-media = "rep"]
       set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias = "rep"]
   ]
   ]
+  ]
 
 
+
+
+  ;republicans
    ask ppls [
    if bias = "republican" [
       set my-nr-rep-belief my-nr-rep-belief + count link-neighbors with [shared-bias-media = "rep"]
@@ -206,17 +222,27 @@ to count-my-exposure
    ]
    ]
 
-   ask ppls[
     ifelse half-of-pop-in-echo-chamber? [
-    if bias = "deomcrat" and status = "taken" and random-float 1 > 0.5 [
+    ask ppls [
+    if bias = "republican" and echo-vs-epistemic = "echo" [
+      if random-float 1 < 0.05 [
+      set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias-media = "dem"]
+      set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias = "dem"]
+        ]
+      ]
+    if bias = "republican" and echo-vs-epistemic = "epistemic" [
       set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias-media = "dem"]
       set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias = "dem"]
       ]
+    ]
 
-    ][
+    ][ ;ELSE
+    ask ppls [
+      if bias = "republican" [
       set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias-media = "dem"]
       set my-nr-dem-belief my-nr-dem-belief + count link-neighbors with [shared-bias = "dem"]
 
+   ]
    ]
    ]
 end
@@ -333,6 +359,7 @@ to make-person [kind]
    ;;positions
    layout-circle ppls 4
    set shared-bias-media "nothing"
+   set echo-vs-epistemic "epistemic"
    ;setxy random-xcor random-ycor; location in the model @@
    ;set news-behaviour-group news-behaviour-groupp
   ]
@@ -398,8 +425,19 @@ to set-my-stations
 end
 
 
+to set-echo-vs-epistemic
 
-to echo1-intervention
+  ask n-of round (nr-ppls-status-taken / 2) ppls with  [status = "taken"] [
+   set echo-vs-epistemic "echo"
+  ]
+
+;  ask n-of round (nr-republicans / 2) ppls with [bias = "republican"] and [status = "taken"] [
+;  set echo-vs-epistemic "echo"
+;  ]
+
+end
+
+to mbr1-intervention
   ask ppls [
 ;    ifelse half-of-pop-in-echo-chamber? [
 ;    if bias = "democrat" and status = "taken" and random-float 1 > 0.5 [
@@ -440,7 +478,7 @@ to echo1-intervention
 end
 
 
-to echo2-intervention
+to mbr2-intervention
   ask ppls [
 
     if bias = "democrat" and status = "taken" [
@@ -592,6 +630,10 @@ end
 
 to-report nr-ppls-sharing-dem
 report count ppls with [shared-bias = "dem"]
+end
+
+to-report nr-ppls-status-taken
+report count ppls with [status = "taken"]
 end
 
 to-report nr-ppls-sharing-rep
@@ -828,7 +870,7 @@ Number
 0.0
 65.0
 0.0
-100.0
+0.0
 true
 true
 "" ""
@@ -843,7 +885,7 @@ BUTTON
 307
 460
 NIL
-echo1-intervention
+MBR1-intervention
 NIL
 1
 T
@@ -860,7 +902,7 @@ INPUTBOX
 204
 335
 stop-after-x-tick
-20.0
+30.0
 1
 0
 Number
@@ -871,7 +913,7 @@ INPUTBOX
 296
 334
 stop-after-x-tick2
-65.0
+160.0
 1
 0
 Number
@@ -882,7 +924,7 @@ BUTTON
 306
 493
 NIL
-echo2-intervention
+MBR2-intervention
 NIL
 1
 T
